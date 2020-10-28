@@ -13,7 +13,7 @@ function parse_ink(file)
     JSON.parse(chop(s, head=1, tail=0); dicttype = OrderedDict)
 end
 
-function localize!(file)
+function localize(file)
     function _localize!(arr::AbstractArray, token)
         for (i, row) in enumerate(arr) 
             _localize!(row, vcat(token, i))
@@ -39,14 +39,14 @@ function localize!(file)
     # localise
     lokalise_data = Any[]
 
-    data = JSON.parse(file; dicttype = OrderedDict)
+    data = parse_ink(file)
     _localize!(data["root"], [])
 
     # save it with localise key
-    prefix = basename(file)
+    prefix = "\$" * basename(file)
 
     for (i, row) in enumerate(lokalise_data)
-        p = JSONPointer.Pointer("/root"* join(row[1], "/"))
+        p = JSONPointer.Pointer("/root/"* join(row[1], "/"))
         finalkey = ink_localkey(prefix, row[1], i)
         row[1] = finalkey
 
@@ -54,7 +54,7 @@ function localize!(file)
         data[p] = "^$finalkey"
     end
 
-    return data, lokalise_data
+    return data, OrderedDict(lokalise_data)
 end
 
 function ink_localkey(prefix, tokens, suffix)
